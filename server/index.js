@@ -5,6 +5,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
 
+
+
 // Load env
 dotenv.config();
 
@@ -19,6 +21,10 @@ app.use(morgan('dev'));
 
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
+// const protectedRoutes = require('./routes/protectedRoutes');
+// app.use('/api/protected', protectedRoutes);
+const watchlistRoutes = require('./routes/watchlistRoutes');
+app.use('/api/watchlist', watchlistRoutes);
 
 
 // Test route
@@ -27,10 +33,13 @@ app.get('/', (req, res) => {
 });
 
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+// mongoose.connect(process.env.MONGO_URI, {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// })
+
+mongoose.connect(process.env.MONGO_URI)
+
 .then(() => {
   console.log('✅ MongoDB connected');
   app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
