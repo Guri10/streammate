@@ -26,6 +26,9 @@ app.use('/api/auth', authRoutes);
 const watchlistRoutes = require('./routes/watchlistRoutes');
 app.use('/api/watchlist', watchlistRoutes);
 
+const tmdbRoutes = require('./routes/tmdbRoutes');
+app.use('/api/tmdb', tmdbRoutes);
+
 
 // Test route
 app.get('/', (req, res) => {
