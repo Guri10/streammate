@@ -20,6 +20,8 @@ router.post('/fetch-and-add', fetchAndAddItem);
 
 // Regular CRUD
 router.get('/', getWatchlist);
+// Stats route
+router.get('/stats', getWatchlistStats);
 router.get('/:id', getSingleItem);
 router.post('/', addWatchItem);
 router.put('/:id', updateWatchItem);

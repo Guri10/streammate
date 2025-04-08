@@ -106,27 +106,51 @@ export const getWatchlistStats = async (req, res) => {
         totalWatchTime: 0,
         averageRating: 0,
         topGenres: [],
+        genreCounts: {},
+        typeCounts: {},
+        ratingDistribution: {},
         statusCounts: {}
       });
     }
 
-    const totalWatchTime = items.reduce((sum, i) => sum + (i.runtime || 0), 0);
-    const rated = items.filter(i => typeof i.rating === 'number');
+    const totalWatchTime = items.reduce((sum, i) => sum + Number(i.runtime || 0), 0);
+
+    const rated = items.filter(i => !isNaN(Number(i.rating)));
     const averageRating = rated.length
-      ? (rated.reduce((sum, i) => sum + i.rating, 0) / rated.length).toFixed(1)
+      ? (rated.reduce((sum, i) => sum + Number(i.rating), 0) / rated.length).toFixed(1)
       : 0;
 
-    const genreCount = {};
+    const genreCounts = {};
     items.forEach(item => {
       (item.genre || []).forEach(g => {
-        genreCount[g] = (genreCount[g] || 0) + 1;
+        genreCounts[g] = (genreCounts[g] || 0) + 1;
       });
     });
 
-    const topGenres = Object.entries(genreCount)
+    const topGenres = Object.entries(genreCounts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
       .map(([g]) => g);
+
+    const typeCounts = items.reduce((acc, item) => {
+      acc[item.type] = (acc[item.type] || 0) + 1;
+      return acc;
+    }, {});
+
+    const ratingDistribution = {
+      '0–4': 0,
+      '5–6': 0,
+      '7–8': 0,
+      '9–10': 0
+    };
+
+    rated.forEach(item => {
+      const r = Number(item.rating);
+      if (r <= 4) ratingDistribution['0–4'] += 1;
+      else if (r <= 6) ratingDistribution['5–6'] += 1;
+      else if (r <= 8) ratingDistribution['7–8'] += 1;
+      else ratingDistribution['9–10'] += 1;
+    });
 
     const statusCounts = items.reduce((acc, item) => {
       acc[item.status] = (acc[item.status] || 0) + 1;
@@ -137,9 +161,13 @@ export const getWatchlistStats = async (req, res) => {
       totalWatchTime,
       averageRating,
       topGenres,
+      genreCounts,
+      typeCounts,
+      ratingDistribution,
       statusCounts
     });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to get stats' });
+    console.error('💥 getWatchlistStats ERROR:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
