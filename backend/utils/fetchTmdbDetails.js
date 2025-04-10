@@ -1,4 +1,4 @@
-import axios from 'axios';
+const axios = require('axios');
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
@@ -30,10 +30,11 @@ const fetchMovieDetailsByTitle = async (title) => {
     tmdbId: details.id,
     genre: (details.genres || []).map((g) => g.name),
     runtime: details.runtime || details.episode_run_time?.[0] || null,
-    posterUrl: `https://image.tmdb.org/t/p/w500${details.poster_path}`,
-    type: match.media_type // 👈 "movie" or "tv"
+    posterUrl: details.poster_path
+      ? `https://image.tmdb.org/t/p/w500${details.poster_path}`
+      : null,
+    type: match.media_type
   };
 };
 
-
-export default fetchMovieDetailsByTitle;
+module.exports = fetchMovieDetailsByTitle;
