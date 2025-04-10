@@ -38,31 +38,38 @@ export const addWatchItem = async (req, res) => {
 
 // Add a new watchlist item using TMDB API
 export const fetchAndAddItem = async (req, res) => {
-  const { title, status, rating, comment } = req.body;
-
-  console.log('▶️ Received request body:', req.body);
-
-  if (!title) return res.status(400).json({ error: 'Title is required' });
-
   try {
-    const metadata = await fetchMovieDetailsByTitle(title);
-    console.log('📦 TMDB metadata:', metadata);
+    const { title, type, tmdbId, posterUrl, genre } = req.body;
+    const userId = req.user.id;
 
-    if (!metadata) return res.status(404).json({ error: 'Movie not found in TMDB' });
+    if (!title || !type || !tmdbId) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
 
-    const item = new WatchItem({
-      ...metadata,
-      status,
-      rating,
-      comment,
-      userId: req.user._id
+    // Avoid duplicates
+    // const existing = await WatchItem.findOne({ tmdbId, user: userId });
+    const existing = await WatchItem.findOne({ tmdbId, userId });
+
+    if (existing) {
+      return res.status(400).json({ error: "Item already in watchlist" });
+    }
+
+    const newItem = new WatchItem({
+      title,
+      type,
+      tmdbId,
+      posterUrl,
+      genre,
+      userId,
+      status: "Plan to Watch",
     });
+    
 
-    const saved = await item.save();
-    res.status(201).json(saved);
+    await newItem.save();
+    res.status(201).json(newItem);
   } catch (err) {
-    console.error('🔥 ERROR:', err);
-    res.status(500).json({ error: 'Failed to fetch and add item' });
+    console.error("Fetch & Add failed:", err);
+    res.status(500).json({ error: "Failed to add item" });
   }
 };
 

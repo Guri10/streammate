@@ -58,7 +58,7 @@ const AddEditItem = () => {
       fetchItem();
     }
   }, [isEditMode, id, token]);
-
+  // TODO add item not working for normal workflow
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
