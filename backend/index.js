@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5001;
 app.use(express.json());
 // Allow Vercel + local dev
 const allowedOrigins = [
-  "http://localhost:5173",
+  "http://localhost:5174",
   "https://streammate-28za.vercel.app"
 ];
 
