@@ -19,7 +19,7 @@ app.use(express.json());
 // Allow Vercel + local dev
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://streammate-28za.vercel.app/"
+  "https://streammate-28za.vercel.app"
 ];
 
 app.use(
@@ -28,6 +28,9 @@ app.use(
     credentials: true
   })
 );
+
+app.options("*", cors());
+
 app.use(helmet());
 app.use(morgan('dev'));
 
