@@ -22,19 +22,33 @@ export const getSingleItem = async (req, res) => {
   }
 };
 
-// Add a new watchlist item manually (used in /watchlist)
 export const addWatchItem = async (req, res) => {
   try {
+    const { title, type } = req.body;
+    const userId = req.user._id;
+
+    let posterUrl = req.body.posterUrl;
+
+    // If poster not provided, try fetching from TMDB
+    if (!posterUrl && title && type) {
+      const tmdbInfo = await fetchMovieDetailsByTitle(title, type);
+      posterUrl = tmdbInfo?.posterUrl || null;
+    }
+
     const item = new WatchItem({
       ...req.body,
-      userId: req.user._id
+      posterUrl,
+      userId,
     });
+
     const saved = await item.save();
     res.status(201).json(saved);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to add item' });
+    console.error("Error adding watch item:", err);
+    res.status(500).json({ error: "Failed to add item" });
   }
 };
+
 
 // Add a new watchlist item using TMDB API
 export const fetchAndAddItem = async (req, res) => {

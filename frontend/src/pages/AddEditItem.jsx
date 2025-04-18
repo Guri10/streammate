@@ -58,7 +58,7 @@ const AddEditItem = () => {
       fetchItem();
     }
   }, [isEditMode, id, token]);
-  // TODO add item not working for normal workflow
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -78,7 +78,7 @@ const AddEditItem = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await api.post("/watchlist/fetch-and-add", itemData, {
+        await api.post("/watchlist", itemData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
