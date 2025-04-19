@@ -1,5 +1,6 @@
 import WatchItem from '../models/WatchItem.js';
 import fetchMovieDetailsByTitle from '../utils/fetchTmdbDetails.js';
+import fetchTmdbDetailsById from "../utils/fetchTmdbDetailsById.js";
 
 // Get all watchlist items for the logged-in user
 export const getWatchlist = async (req, res) => {
@@ -51,41 +52,49 @@ export const addWatchItem = async (req, res) => {
 
 
 // Add a new watchlist item using TMDB API
+
+
 export const fetchAndAddItem = async (req, res) => {
   try {
-    const { title, type, tmdbId, posterUrl, genre } = req.body;
+    const { title, type, tmdbId, posterUrl } = req.body;
     const userId = req.user.id;
 
     if (!title || !type || !tmdbId) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Avoid duplicates
-    // const existing = await WatchItem.findOne({ tmdbId, user: userId });
+    // Check if already exists
     const existing = await WatchItem.findOne({ tmdbId, userId });
-
     if (existing) {
       return res.status(400).json({ error: "Item already in watchlist" });
     }
 
+    // ✅ Fetch full TMDB metadata
+    const tmdbDetails = await fetchTmdbDetailsById(tmdbId, type);
+    console.log("🎬 TMDB Details:", tmdbDetails);
+    if (!tmdbDetails) {
+      return res.status(500).json({ error: "Failed to fetch TMDB details" });
+    }
+
     const newItem = new WatchItem({
-      title,
+      title: tmdbDetails.title || title,
       type,
       tmdbId,
-      posterUrl,
-      genre,
+      posterUrl: tmdbDetails.posterUrl || posterUrl,
+      genre: tmdbDetails.genre,
+      runtime: tmdbDetails.runtime,
       userId,
       status: "Plan to Watch",
     });
-    
 
     await newItem.save();
     res.status(201).json(newItem);
   } catch (err) {
-    console.error("Fetch & Add failed:", err);
+    console.error("Fetch & Add failed:", err.message);
     res.status(500).json({ error: "Failed to add item" });
   }
 };
+
 
 
 // Update an existing item
