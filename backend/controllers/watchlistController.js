@@ -29,16 +29,24 @@ export const addWatchItem = async (req, res) => {
     const userId = req.user._id;
 
     let posterUrl = req.body.posterUrl;
+    let genre = req.body.genre || [];
+    let runtime = req.body.runtime || null;
 
-    // If poster not provided, try fetching from TMDB
-    if (!posterUrl && title && type) {
-      const tmdbInfo = await fetchMovieDetailsByTitle(title, type);
-      posterUrl = tmdbInfo?.posterUrl || null;
+    // 🧠 Fetch from TMDB if missing
+    if ((!posterUrl || genre.length === 0 || !runtime) && title && type) {
+      const tmdbInfo = await fetchMovieDetailsByTitle(title);
+      if (tmdbInfo) {
+        posterUrl = tmdbInfo.posterUrl || posterUrl;
+        genre = tmdbInfo.genre || genre;
+        runtime = tmdbInfo.runtime || runtime;
+      }
     }
 
     const item = new WatchItem({
       ...req.body,
       posterUrl,
+      genre,
+      runtime,
       userId,
     });
 
@@ -49,6 +57,7 @@ export const addWatchItem = async (req, res) => {
     res.status(500).json({ error: "Failed to add item" });
   }
 };
+
 
 
 // Add a new watchlist item using TMDB API
